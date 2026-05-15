@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  background: #07111f;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(34, 211, 238, 0.16), transparent 32rem),
+    radial-gradient(circle at 82% 4%, rgba(45, 212, 191, 0.13), transparent 26rem),
+    linear-gradient(135deg, #07111f 0%, #0b1728 50%, #09111b 100%);
+  color: #e2e8f0;
+}
+
+@layer components {
+  .glass {
+    @apply border border-white/10 bg-white/[0.07] shadow-glow backdrop-blur-xl;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-night disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-muted {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-white/15;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-white/10 bg-slate-950/50 px-3 py-2.5 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-300;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-white;
+  }
+}
+
+@media print {
+  nav,
+  aside,
+  button,
+  form {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}

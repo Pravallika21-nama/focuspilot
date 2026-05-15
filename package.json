@@ -1,0 +1,14 @@
+{
+  "name": "focuspilot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack AI-powered FocusPilot study app with reminders, authentication, analytics, and deployment-ready setup.",
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "seed": "npm run seed --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
