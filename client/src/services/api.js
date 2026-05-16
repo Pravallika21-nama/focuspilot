@@ -57,7 +57,22 @@ export async function generateTimetable(payload) {
 export async function fetchAnalytics() {
   return safeApi(
     async () => (await api.get("/progress/analytics")).data,
-    { summary: { weeklyHours: 0, tasksCompleted: 0, consistency: 0, averageFocus: 0 }, daily: [], subjects: [] }
+    {
+      summary: {
+        plannedHours: 0,
+        completedHours: 0,
+        remainingHours: 0,
+        weeklyHours: 0,
+        tasksCompleted: 0,
+        totalTasks: 0,
+        completionPercent: 0,
+        remainingTasks: 0,
+        consistency: 0,
+        averageFocus: 0
+      },
+      daily: [],
+      subjects: []
+    }
   );
 }
 
@@ -74,3 +89,18 @@ export async function askAssistant(message) {
     { answer: "Focus on your nearest exam first, then spend one block on the weakest subject. Keep the last 10 minutes for recall." }
   );
 }
+
+export async function fetchReminderPrefs() {
+  return safeApi(
+    async () => (await api.get("/reminders/preferences")).data,
+    { emailEnabled: true, reminderTime: "07:00", studyDays: [1, 2, 3, 4, 5] }
+  );
+}
+
+export async function saveReminderPrefs(payload) {
+  return safeApi(
+    async () => (await api.put("/reminders/preferences", payload)).data,
+    payload
+  );
+}
+

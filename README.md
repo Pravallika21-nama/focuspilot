@@ -1,163 +1,244 @@
-# FocusPilot
+# FocusPilot 🚀
 
-FocusPilot is a full-stack study productivity app built for internship demos and free-tier deployment. It generates personalized timetables, tracks progress, sends reminders, and includes a polished futuristic dashboard.
+> **Smart AI-powered study planner for students.** Generate a personalized roadmap, track progress with Pomodoro & analytics, and stay on schedule with daily email reminders.
 
-## Tech Stack
+![Tech Stack](https://img.shields.io/badge/React%20+%20Vite-blue) ![Node.js](https://img.shields.io/badge/Node.js-green) ![MongoDB](https://img.shields.io/badge/MongoDB-brightgreen) ![Firebase](https://img.shields.io/badge/Firebase-orange) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-teal)
 
-- Frontend: React, Vite, Tailwind CSS, Framer Motion, React Router, Axios
-- Backend: Node.js, Express.js, MongoDB Atlas, JWT, bcrypt
-- AI: OpenAI API, with deterministic fallback planner when no API key is configured
-- Notifications: Browser Notification API, Nodemailer email reminders, node-cron scheduled checks
-- Deployment: Vercel frontend, Render backend, MongoDB Atlas database
+---
 
-## Features
+## ✨ Features
 
-- JWT signup/login plus Google login placeholder endpoint for Firebase or Google OAuth integration
-- Forgot password demo flow
-- AI timetable generation from subjects, exam dates, weak subjects, difficulty, priorities, preferred times, and breaks
-- Daily and weekly schedules, revision plan, productivity suggestions, and break intervals
-- Browser notification permission flow and local 15-minute reminders
-- Email reminder API and cron reminder processor
-- Dashboard with today tasks, upcoming exams, streaks, quote, progress, and analytics
-- Interactive calendar, task editing/completion/deletion, Pomodoro timer, AI chat assistant
-- Export or download timetable as PDF using browser print
-- Demo seed data and sample generated timetable
+| Feature | Description |
+|---|---|
+| 🔐 **Authentication** | Email/password + Google OAuth via Firebase |
+| 📅 **AI Roadmap** | Generates a personalized weekly study schedule |
+| 🍅 **Pomodoro Timer** | Built-in focus session timer |
+| 📊 **Analytics** | Completion rates, streaks, subject progress |
+| 📧 **Email Reminders** | Welcome email + daily study digest via Nodemailer |
+| 🔔 **Reminder Settings** | Choose days, time, and toggle email reminders |
+| 🗓 **Calendar View** | Visual session calendar |
+| 🤖 **AI Chat Assistant** | Study advice powered by OpenAI |
+| 🌙 **Dark Mode** | Glassmorphism dark UI throughout |
 
-## Folder Structure
+---
 
-```text
-client/
-  src/
-    components/
-    context/
-    data/
-    pages/
-    services/
-    utils/
-server/
-  config/
-  controllers/
-  middleware/
-  models/
-  routes/
-  services/
-  utils/
+## 📁 Project Structure
+
+```
+focuspilot/
+├── client/                 # React + Vite frontend
+│   ├── src/
+│   │   ├── components/     # AppShell, Pomodoro, TaskList, StatCard …
+│   │   ├── context/        # AuthContext, ToastContext
+│   │   ├── pages/          # Dashboard, AuthPage, RemindersPage …
+│   │   ├── services/       # api.js, firebase.js, notifications.js
+│   │   └── styles.css      # TailwindCSS + custom component styles
+│   ├── .env.example        # Client environment template
+│   └── vite.config.js
+│
+├── server/                 # Node.js + Express backend
+│   └── src/
+│       ├── config/         # MongoDB connection
+│       ├── controllers/    # Auth, Reminder, Task, Profile …
+│       ├── middleware/     # JWT auth, error handling
+│       ├── models/         # User, Timetable, Notification …
+│       ├── routes/         # REST API routes
+│       └── services/       # Email, Firebase Admin, cron jobs
+│
+├── package.json            # Root — runs both client & server
+└── README.md
 ```
 
-## Environment Setup
+---
 
-1. Install Node.js 18 or newer.
-2. Create a MongoDB Atlas database and copy the connection string.
-3. Create a Firebase project and enable Google Authentication.
-4. Copy `server/.env.example` to `server/.env`.
-5. Copy `client/.env.example` to `client/.env`.
-6. Fill in your values.
+## 🚀 Quick Start
 
-## Google Login Setup
+### Prerequisites
 
-In Firebase Console:
+- **Node.js** v18+ ([download](https://nodejs.org))
+- **npm** v9+
+- Optional: **MongoDB** (Atlas or local) — app works without it using an in-memory store
+- Optional: **Firebase** project — required for Google login only
+- Optional: **Gmail App Password** — required for email reminders
 
-1. Create or open a Firebase project.
-2. Go to Authentication.
-3. Enable the Google sign-in provider.
-4. Add `localhost` for local development and your Vercel domain for deployment in authorized domains.
+---
 
-Frontend Firebase values go in `client/.env`:
+### 1. Clone & Install
 
 ```bash
-VITE_FIREBASE_API_KEY=your-web-api-key
+git clone <your-repo-url>
+cd focuspilot
+
+# Install all dependencies (client + server)
+npm run install:all
+```
+
+---
+
+### 2. Configure Environment Variables
+
+#### Client (`client/.env`)
+
+```bash
+cp client/.env.example client/.env
+```
+
+Edit `client/.env`:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+
+# Firebase (required for Google login — leave blank to disable Google login)
+VITE_FIREBASE_API_KEY=AIza...
 VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_APP_ID=your-web-app-id
+VITE_FIREBASE_APP_ID=1:123456:web:abc123
 ```
 
-Backend Firebase Admin values go in `server/.env`:
+#### Server (`server/.env`)
 
 ```bash
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+cp server/src/.env.example server/.env
 ```
 
-After this, students can log in with their own Gmail account. The backend verifies the Google token and stores that Gmail address as the notification email.
+Edit `server/.env`:
 
-## Reminder Email Setup
+```env
+PORT=5000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
 
-To send reminders to the logged-in Gmail/email address, configure SMTP in `server/.env`:
+# MongoDB Atlas connection string (optional — uses in-memory store if blank)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/focuspilot
 
-```bash
+# JWT — CHANGE THIS to a long random string in production
+JWT_SECRET=replace-with-a-long-random-secret-at-least-32-chars
+JWT_EXPIRES_IN=7d
+
+# Gmail SMTP for email reminders (optional — emails are skipped gracefully if blank)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your-sender@gmail.com
-SMTP_PASS=your-gmail-app-password
-SMTP_FROM="FocusPilot <your-sender@gmail.com>"
+SMTP_USER=your-gmail@gmail.com
+SMTP_PASS=xxxx-xxxx-xxxx-xxxx   # Gmail App Password (not your login password)
+SMTP_FROM="FocusPilot <your-gmail@gmail.com>"
+
+# OpenAI (optional — AI planner and chat)
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+
+# Firebase Admin SDK (optional — required for Google login verification)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@your-project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour key here\n-----END PRIVATE KEY-----\n"
 ```
 
-Use a Gmail App Password, not your normal Gmail password. The app creates daily study reminders and exam countdown reminders when a timetable is generated.
+---
 
-## Run Locally
+### 3. Start Development Servers
 
 ```bash
-npm run install:all
-npm run seed
 npm run dev
 ```
 
-Frontend: `http://localhost:5173`
+This runs **both** client and server concurrently:
+- **Client:** http://localhost:5173
+- **Server API:** http://localhost:5000/api
 
-Backend: `http://localhost:5000`
+> The app works even without MongoDB, Firebase, or SMTP — each optional service degrades gracefully.
 
-## Demo Login
+---
 
-After seeding:
+## 🔥 Firebase Setup (for Google Login)
 
-- Email: `demo@student.com`
-- Password: `Demo@12345`
+1. Go to [Firebase Console](https://console.firebase.google.com/) → **Add project**
+2. Enable **Authentication** → **Sign-in methods** → **Google**
+3. Add `http://localhost:5173` to **Authorized domains**
+4. Go to **Project settings** → copy the **web app config** into `client/.env`
+5. Go to **Project settings** → **Service accounts** → **Generate new private key**
+6. Copy the values into `server/.env` (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`)
 
-## API Overview
+> ⚠️ **Without Firebase:** Email/password login still works fully. Google login shows a user-friendly toast message instead of crashing.
 
-- `GET /api/auth/status`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/google`
-- `POST /api/auth/forgot-password`
-- `GET /api/profile`
-- `PUT /api/profile`
-- `POST /api/timetables/generate`
-- `GET /api/timetables`
-- `PATCH /api/tasks/:id`
-- `DELETE /api/tasks/:id`
-- `GET /api/progress/analytics`
-- `POST /api/notifications/test-email`
-- `GET /api/notifications`
-- `POST /api/chat`
+---
 
-## Deployment
+## 📧 Email Reminders Setup (Gmail)
 
-### Backend on Render
+1. Enable **2-Step Verification** on your Gmail account
+2. Go to [Google Account](https://myaccount.google.com/) → **Security** → **App passwords**
+3. Create a new App Password for "Mail" → "Windows Computer" (or "Other")
+4. Copy the 16-character password into `SMTP_PASS` in `server/.env`
+5. Set `SMTP_USER` to your Gmail address
 
-1. Push this repo to GitHub.
-2. Create a new Render Web Service from the repo.
-3. Set root directory to `server`.
-4. Build command: `npm install`
-5. Start command: `npm start`
-6. Add environment variables from `server/.env.example`.
-7. Set `CLIENT_URL` to your Vercel frontend URL.
+**Email events:**
+- ✅ **Welcome email** — sent automatically when a user registers
+- ⏰ **Daily digest** — sent every day at **7 AM** to opted-in users with their today's tasks
+- 🔔 **Session reminders** — sent 15 minutes before study sessions
 
-### Frontend on Vercel
+> ⚠️ **Without SMTP:** All email operations silently skip. No crash, no error shown to users.
 
-1. Create a new Vercel project from the repo.
-2. Set root directory to `client`.
-3. Build command: `npm run build`
-4. Output directory: `dist`
-5. Add `VITE_API_URL` pointing to the Render backend URL plus `/api`.
+---
 
-## Notes for a 90-Second Demo
+## 🗄️ MongoDB Setup (Atlas)
 
-1. Login with the demo user.
-2. Show the dashboard cards, streak, and calendar.
-3. Generate a timetable from the AI Planner form.
-4. Mark a task complete and show analytics update.
-5. Trigger browser notifications and open the Pomodoro/chat panels.
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com/) → Create a free cluster
+2. **Database Access** → Add a user with password
+3. **Network Access** → Add `0.0.0.0/0` (or your specific IP)
+4. **Connect** → Copy the connection string into `MONGODB_URI` in `server/.env`
 
-See [ROADMAP.md](./ROADMAP.md) for a feature-by-feature explanation and next-step roadmap.
+> ⚠️ **Without MongoDB:** The app uses an in-memory store (data is lost on server restart). Fully functional for development.
+
+---
+
+## 📜 Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start both client & server (concurrent) |
+| `npm run install:all` | Install all dependencies |
+| `npm run seed` | Seed demo data to MongoDB |
+| `npm run dev --prefix client` | Start client only |
+| `npm run dev --prefix server` | Start server only |
+
+---
+
+## 🌐 API Endpoints
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | — | Create account (sends welcome email) |
+| `POST` | `/api/auth/login` | — | Email/password login |
+| `POST` | `/api/auth/google` | — | Google OAuth login |
+| `GET` | `/api/profile` | ✅ JWT | Get current user profile |
+| `POST` | `/api/timetables/generate` | ✅ JWT | Generate AI study roadmap |
+| `GET` | `/api/timetables/active` | ✅ JWT | Get active timetable |
+| `PATCH` | `/api/tasks/:id` | ✅ JWT | Mark task complete |
+| `GET` | `/api/reminders/preferences` | ✅ JWT | Get reminder settings |
+| `PUT` | `/api/reminders/preferences` | ✅ JWT | Update reminder settings |
+| `GET` | `/api/notifications` | ✅ JWT | List notifications |
+| `GET` | `/api/progress/analytics` | ✅ JWT | Get analytics data |
+| `POST` | `/api/chat` | ✅ JWT | Ask AI assistant |
+| `GET` | `/api/health` | — | Health check |
+
+---
+
+## 🛡️ Security Notes
+
+- **Never** commit `.env` files — they are in `.gitignore`
+- Use a strong, random `JWT_SECRET` in production (min 32 chars)
+- Gmail App Password is **not** your Gmail login password
+- In production, restrict `CLIENT_URL` to your actual domain
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit changes: `git commit -m "feat: add my feature"`
+4. Push and open a Pull Request
+
+---
+
+## 📄 License
+
+MIT — Built with ❤️ for students everywhere.

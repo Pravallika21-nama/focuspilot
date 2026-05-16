@@ -1,7 +1,9 @@
 import { validationResult } from "express-validator";
 import mongoose from "mongoose";
 import { verifyGoogleIdToken } from "../services/firebaseAdmin.js";
+import { listLoginEvents, recordLoginEvent } from "../services/loginRecordStore.js";
 import { createUser, findUserByEmail, normalizeUser, updateUser, verifyUserPassword } from "../services/userStore.js";
+import { sendWelcomeEmail } from "../services/emailService.js";
 import { signToken } from "../utils/token.js";
 
 function authResponse(user) {
@@ -28,8 +30,16 @@ export async function register(req, res) {
   if (exists) return res.status(409).json({ message: "Email already registered" });
 
   const user = await createUser(req.body);
+  await recordLoginEvent({ userId: user.id || user._id, email: user.email, provider: "local", action: "register" });
+
+  // Send welcome email (non-blocking — doesn't fail the request if email fails)
+  sendWelcomeEmail({ to: user.email, name: user.name }).catch((err) =>
+    console.warn("Welcome email failed:", err.message)
+  );
+
   res.status(201).json(authResponse(user));
 }
+
 
 export async function login(req, res) {
   const errors = validationResult(req);
@@ -40,6 +50,7 @@ export async function login(req, res) {
     return res.status(401).json({ message: "Invalid email or password" });
   }
   const updated = await updateUser(user, { lastActiveDate: new Date() });
+  await recordLoginEvent({ userId: user.id || user._id, email: user.email, provider: "local", action: "login" });
   res.json(authResponse(updated || user));
 }
 
@@ -72,10 +83,16 @@ export async function googleLogin(req, res) {
         lastActiveDate: new Date()
       });
     }
+    await recordLoginEvent({ userId: user.id || user._id, email: user.email, provider: "google", action: "google-login" });
     res.json(authResponse(user));
   } catch (error) {
     res.status(401).json({ message: error.message || "Google authentication failed" });
   }
+}
+
+export async function loginHistory(req, res) {
+  const logins = await listLoginEvents(req.user.id || req.user._id);
+  res.json({ logins });
 }
 
 export async function forgotPassword(req, res) {

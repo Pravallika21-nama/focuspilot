@@ -9,6 +9,7 @@ import taskRoutes from "./routes/taskRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import reminderRoutes from "./routes/reminderRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 
 const app = express();
@@ -29,6 +30,7 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/reminders", reminderRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

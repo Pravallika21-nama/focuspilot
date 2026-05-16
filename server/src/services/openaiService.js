@@ -16,9 +16,9 @@ ${JSON.stringify(inputs, null, 2)}
 
 Return this shape only:
 {
-  "dailySchedule": [{"subject":"","topic":"","date":"YYYY-MM-DD","startTime":"HH:mm","endTime":"HH:mm","type":"study|revision|practice|break","priority":"low|medium|high","notes":""}],
+  "dailySchedule": [{"subject":"","topic":"specific unit/chapter task","date":"YYYY-MM-DD","startTime":"HH:mm","endTime":"HH:mm","type":"study|revision|practice|break","priority":"low|medium|high","notes":"specific deliverable"}],
   "weeklySchedule": [same session object],
-  "subjectRoadmap": ["subject-wise roadmap item with units, prerequisites, practice method, lab/theory strategy, and target outcome"],
+  "subjectRoadmap": ["precise subject-wise roadmap with unit order, prerequisite gap, practice method, exam strategy, completion target, and measurable output"],
   "revisionPlan": ["..."],
   "suggestions": ["..."],
   "productivityScore": 0-100
@@ -77,7 +77,7 @@ function buildFallbackPlan(inputs) {
     };
   }
 
-  const days = 7;
+  const days = Math.min(21, Math.max(7, daysUntilNearestExam(subjects)));
   const dailyHours = Number(inputs.dailyStudyHours || 3);
   const preferred = inputs.preferredStudyTime || "18:00";
   const [hour, minute] = preferred.split(":").map(Number);
@@ -94,17 +94,18 @@ function buildFallbackPlan(inputs) {
 
     for (let block = 0; block < blocks; block += 1) {
       const subject = ranked[(day + block) % ranked.length];
+      const unit = pickUnit(subject, day + block);
       const start = new Date(cursor);
       const end = new Date(cursor.getTime() + 50 * 60 * 1000);
       const session = {
         subject: subject.name,
-        topic: block % 2 === 0 ? "Concept mastery and notes" : "Practice questions",
+        topic: buildSessionTopic(subject, unit, block),
         date: date.toISOString().slice(0, 10),
         startTime: toTime(start),
         endTime: toTime(end),
         type: block === blocks - 1 ? "revision" : "study",
         priority: subject.isWeak || subject.priority >= 4 ? "high" : "medium",
-        notes: subject.isWeak ? "Spend extra time on weak areas and error logs." : "Keep notes crisp and test yourself."
+        notes: buildSessionDeliverable(subject, unit, block)
       };
       dailySchedule.push(session);
       weeklySchedule.push(session);
@@ -146,6 +147,7 @@ function toTime(date) {
 
 function buildSubjectRoadmap(subject, inputs) {
   const type = subject.subjectType || inferSubjectType(subject.name);
+  const units = parseUnits(subject.syllabusUnits);
   const method = {
     programming: "learn syntax and patterns, implement examples, then solve timed coding problems",
     math: "revise formulas, solve solved examples, then practice exam-level numericals",
@@ -155,12 +157,15 @@ function buildSubjectRoadmap(subject, inputs) {
     elective: "focus on scoring units, definitions, applications, and repeated questions"
   }[type] || "study concepts, practice questions, and revise weak units";
 
-  const units = subject.syllabusUnits ? ` Units to cover: ${subject.syllabusUnits}.` : "";
+  const unitPlan = units.length
+    ? ` Unit order: ${units.map((unit, index) => `${index + 1}. ${unit}`).join("; ")}.`
+    : " First split the syllabus into units, then study high-weight chapters before low-weight reading.";
   const weakness = subject.isWeak || Number(subject.currentUnderstanding || 50) < 50
-    ? " Start with fundamentals and weak prerequisites before exam questions."
-    : " Move quickly from concepts to practice and revision.";
+    ? " First repair prerequisites and make a mistake log before attempting timed questions."
+    : " Move quickly from concept review to timed practice and previous-year questions.";
+  const exam = subject.examDate ? ` Complete first pass by ${dateBefore(subject.examDate, 3)} and keep the final 3 days for revision.` : " Set a target exam date to make this roadmap sharper.";
 
-  return `${subject.name}: For ${inputs.branch || "BTech"} semester ${inputs.semester || ""}, use a ${method} roadmap.${units}${weakness} Target ${subject.targetScore || 75}% with priority ${subject.priority || 3}/5.`;
+  return `${subject.name}: For ${inputs.branch || "BTech"} semester ${inputs.semester || ""}, use this method: ${method}.${unitPlan} ${weakness} ${exam} Target ${subject.targetScore || 75}% with priority ${subject.priority || 3}/5. Measurable output: one-page notes per unit, solved examples, previous-year questions, and a final error list.`;
 }
 
 function inferSubjectType(name = "") {
@@ -169,4 +174,48 @@ function inferSubjectType(name = "") {
   if (/(math|calculus|algebra|probability|statistics|numerical)/.test(value)) return "math";
   if (/(lab|workshop|practical)/.test(value)) return "lab";
   return "core";
+}
+
+function parseUnits(value = "") {
+  return String(value)
+    .split(/[\n,;|]+/)
+    .map((unit) => unit.trim())
+    .filter(Boolean);
+}
+
+function pickUnit(subject, index) {
+  const units = parseUnits(subject.syllabusUnits);
+  if (!units.length) return subject.name;
+  return units[index % units.length];
+}
+
+function buildSessionTopic(subject, unit, block) {
+  const type = subject.subjectType || inferSubjectType(subject.name);
+  if (block % 3 === 2) return `${unit}: revision and self-test`;
+  if (type === "programming") return `${unit}: implement and solve problems`;
+  if (type === "math") return `${unit}: formulas and numericals`;
+  if (type === "lab") return `${unit}: procedure, output, and viva prep`;
+  return `${unit}: concepts and exam questions`;
+}
+
+function buildSessionDeliverable(subject, unit, block) {
+  if (block % 3 === 2) return `Revise ${unit}, close mistakes, and write 5 recall questions.`;
+  if (subject.isWeak || Number(subject.currentUnderstanding || 50) < 50) {
+    return `Build fundamentals for ${unit}, solve 3 examples, and add doubts to the error log.`;
+  }
+  return `Finish ${unit} notes and solve at least 5 exam-level questions.`;
+}
+
+function daysUntilNearestExam(subjects) {
+  const days = subjects
+    .filter((subject) => subject.examDate)
+    .map((subject) => Math.ceil((new Date(subject.examDate) - new Date()) / 86400000))
+    .filter((daysLeft) => Number.isFinite(daysLeft) && daysLeft > 0);
+  return days.length ? Math.min(...days) : 7;
+}
+
+function dateBefore(date, days) {
+  const value = new Date(date);
+  value.setDate(value.getDate() - days);
+  return value.toISOString().slice(0, 10);
 }

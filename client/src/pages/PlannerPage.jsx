@@ -169,7 +169,7 @@ export default function PlannerPage() {
             <p className="section-title">AI Output</p>
             <div className="flex gap-2">
               <button className="btn-muted" onClick={() => window.print()} disabled={!plan}><Printer size={16} /> PDF</button>
-              <button className="btn-muted" onClick={() => downloadPlan(plan)} disabled={!plan}><Download size={16} /> Download</button>
+              <button className="btn-muted" onClick={() => downloadRoadmapDocument(plan)} disabled={!plan}><Download size={16} /> Document</button>
             </div>
           </div>
           {!plan && (
@@ -212,13 +212,88 @@ function InfoPanel({ title, items = [] }) {
   );
 }
 
-function downloadPlan(plan) {
+function downloadRoadmapDocument(plan) {
   if (!plan) return;
-  const blob = new Blob([JSON.stringify(plan, null, 2)], { type: "application/json" });
+  const inputs = plan.inputs || {};
+  const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>FocusPilot BTech Roadmap</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #111827; line-height: 1.55; padding: 32px; }
+    h1 { color: #0f766e; margin-bottom: 4px; }
+    h2 { border-bottom: 1px solid #d1d5db; padding-bottom: 6px; margin-top: 28px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #ecfeff; }
+    li { margin-bottom: 8px; }
+    .meta { color: #4b5563; }
+  </style>
+</head>
+<body>
+  <h1>FocusPilot BTech Study Roadmap</h1>
+  <p class="meta">Branch: ${escapeHtml(inputs.branch || "Not specified")} | Semester: ${escapeHtml(inputs.semester || "Not specified")} | Goal: ${escapeHtml(inputs.academicGoal || "Not specified")}</p>
+
+  <h2>Student Inputs</h2>
+  <p>Daily study hours: ${escapeHtml(inputs.dailyStudyHours || "Not specified")} | Preferred time: ${escapeHtml(inputs.preferredStudyTime || "Not specified")} | Learning style: ${escapeHtml(inputs.learningStyle || "Not specified")}</p>
+  <p>Backlogs / risky areas: ${escapeHtml(inputs.backlogs || "None mentioned")}</p>
+
+  <h2>Subjects</h2>
+  <table>
+    <thead><tr><th>Subject</th><th>Exam</th><th>Difficulty</th><th>Priority</th><th>Understanding</th><th>Target</th><th>Syllabus</th></tr></thead>
+    <tbody>
+      ${(inputs.subjects || []).map((subject) => `<tr>
+        <td>${escapeHtml(subject.name)}</td>
+        <td>${escapeHtml(subject.examDate || "Not set")}</td>
+        <td>${escapeHtml(subject.difficulty)}</td>
+        <td>${escapeHtml(subject.priority)}</td>
+        <td>${escapeHtml(subject.currentUnderstanding)}%</td>
+        <td>${escapeHtml(subject.targetScore)}%</td>
+        <td>${escapeHtml(subject.syllabusUnits || "Not provided")}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>
+
+  <h2>Subject Roadmap</h2>
+  <ol>${(plan.subjectRoadmap || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
+
+  <h2>Weekly Timetable</h2>
+  <table>
+    <thead><tr><th>Date</th><th>Time</th><th>Subject</th><th>Task</th><th>Type</th><th>Deliverable</th></tr></thead>
+    <tbody>
+      ${(plan.weeklySchedule || []).map((task) => `<tr>
+        <td>${escapeHtml(String(task.date).slice(0, 10))}</td>
+        <td>${escapeHtml(task.startTime)} - ${escapeHtml(task.endTime)}</td>
+        <td>${escapeHtml(task.subject)}</td>
+        <td>${escapeHtml(task.topic)}</td>
+        <td>${escapeHtml(task.type)}</td>
+        <td>${escapeHtml(task.notes || "")}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>
+
+  <h2>Revision Plan</h2>
+  <ol>${(plan.revisionPlan || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
+
+  <h2>Productivity Suggestions</h2>
+  <ol>${(plan.suggestions || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
+</body>
+</html>`;
+  const blob = new Blob([html], { type: "application/msword" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "btech-ai-study-roadmap.json";
+  link.download = "FocusPilot-BTech-Roadmap.doc";
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

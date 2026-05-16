@@ -7,6 +7,7 @@ import PlannerPage from "./pages/PlannerPage.jsx";
 import CalendarPage from "./pages/CalendarPage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import RemindersPage from "./pages/RemindersPage.jsx";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/reminders" element={<RemindersPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

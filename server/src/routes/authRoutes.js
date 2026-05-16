@@ -1,11 +1,13 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { authStatus, forgotPassword, googleLogin, login, register } from "../controllers/authController.js";
+import { authStatus, forgotPassword, googleLogin, login, loginHistory, register } from "../controllers/authController.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
 router.get("/status", asyncHandler(authStatus));
+router.get("/logins", protect, asyncHandler(loginHistory));
 router.post(
   "/register",
   [

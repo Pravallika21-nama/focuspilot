@@ -60,7 +60,11 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  const value = useMemo(() => ({ user, authChecking, login, register, loginWithGoogle, logout, setUser }), [user, authChecking]);
+  const value = useMemo(
+    () => ({ user, authChecking, login, register, loginWithGoogle, logout, setUser }),
+    [user, authChecking]
+  );
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

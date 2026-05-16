@@ -13,8 +13,11 @@ const userSchema = new mongoose.Schema(
     notificationPreferences: {
       browser: { type: Boolean, default: true },
       email: { type: Boolean, default: true },
+      emailEnabled: { type: Boolean, default: true },
       whatsapp: { type: Boolean, default: false },
-      whatsappNumber: String
+      whatsappNumber: String,
+      reminderTime: { type: String, default: "07:00" },
+      studyDays: { type: [Number], default: [1, 2, 3, 4, 5] },
     },
     streak: { type: Number, default: 0 },
     lastActiveDate: Date
