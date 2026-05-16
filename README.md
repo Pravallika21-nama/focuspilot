@@ -239,6 +239,3 @@ This runs **both** client and server concurrently:
 
 ---
 
-## 📄 License
-
-MIT — Built with ❤️ for students everywhere.
