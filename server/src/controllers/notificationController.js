@@ -12,10 +12,15 @@ export async function createNotification(req, res) {
 }
 
 export async function sendTestEmail(req, res) {
-  const result = await sendEmailReminder({
-    to: req.user.email,
-    subject: "Your FocusPilot reminder is ready",
-    html: "<p>This is a test reminder from FocusPilot.</p>"
-  });
-  res.json({ result });
+  try {
+    const result = await sendEmailReminder({
+      to: req.user.email,
+      subject: "Your FocusPilot reminder is ready",
+      html: "<p>This is a test reminder from FocusPilot.</p>"
+    });
+    res.json({ result });
+  } catch (error) {
+    console.error("Email failed:", error.message);
+    res.status(500).json({ message: "Failed to send email. Check SMTP credentials.", error: error.message });
+  }
 }
