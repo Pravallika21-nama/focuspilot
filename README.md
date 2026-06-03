@@ -148,6 +148,117 @@ This runs **both** client and server concurrently:
 
 ---
 
+## ▶️ How to Run the Application
+
+### Development Mode
+
+**Start everything with a single command:**
+
+```bash
+npm run dev
+```
+
+This will:
+1. Start the **Node.js backend** on `http://localhost:5000`
+2. Start the **React frontend** on `http://localhost:5173`
+3. Watch both projects for changes (hot reload enabled)
+
+**Open your browser and navigate to:**
+```
+http://localhost:5173
+```
+
+**Or run client & server separately:**
+
+Terminal 1 (Backend):
+```bash
+npm run dev --prefix server
+```
+
+Terminal 2 (Frontend):
+```bash
+npm run dev --prefix client
+```
+
+---
+
+### Production Build
+
+**Build both client and server:**
+
+```bash
+# Build frontend
+npm run build --prefix client
+
+# Build backend (if needed)
+npm run build --prefix server
+```
+
+**Start production server:**
+
+```bash
+# Set NODE_ENV to production in .env
+NODE_ENV=production npm start --prefix server
+```
+
+The React app will be served statically from the server at `http://localhost:5000`
+
+---
+
+### 🔧 Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start both client & server (dev mode with hot reload) |
+| `npm run build --prefix client` | Build optimized React bundle |
+| `npm run preview --prefix client` | Preview production build locally |
+| `npm run dev --prefix client` | Start client only (http://localhost:5173) |
+| `npm run dev --prefix server` | Start server only (http://localhost:5000) |
+| `npm start --prefix server` | Start server in production mode |
+| `npm run install:all` | Install dependencies for both client & server |
+| `npm run seed` | Seed demo data to MongoDB |
+
+---
+
+### 🐛 Troubleshooting
+
+**Port already in use:**
+```bash
+# Kill process on port 5000 (server)
+npx kill-port 5000
+
+# Kill process on port 5173 (client)
+npx kill-port 5173
+```
+
+**Dependencies not installing:**
+```bash
+# Clear npm cache and reinstall
+npm cache clean --force
+npm run install:all
+```
+
+**MongoDB connection errors:**
+- Verify `MONGODB_URI` is correct in `server/.env`
+- Check IP whitelist in MongoDB Atlas (Network Access)
+- If using local MongoDB, ensure it's running: `mongod`
+
+**Email not sending:**
+- Verify Gmail App Password (not your login password) in `SMTP_PASS`
+- Enable 2-Step Verification on Gmail account
+- Check SMTP credentials in `server/.env`
+
+**Firebase/Google login not working:**
+- Verify callback URL in Firebase Console matches `http://localhost:5173`
+- Check `VITE_FIREBASE_API_KEY` and other keys in `client/.env`
+- Ensure Firebase project has Google Sign-in enabled
+
+**Hot reload not working:**
+- Try restarting both dev servers: `Ctrl+C` then `npm run dev`
+- Check that files are being saved (no IDE-level exclusions)
+
+---
+
 ## 🔥 Firebase Setup (for Google Login)
 
 1. Go to [Firebase Console](https://console.firebase.google.com/) → **Add project**
